@@ -1,4 +1,6 @@
 ﻿Imports System.IO
+Imports System.Net
+Imports System.Text
 Imports System.Xml
 
 Public Class Form1
@@ -10,6 +12,16 @@ Public Class Form1
         Dim xmlnode_delivery As XmlNodeList
         Dim xmlnode_item As XmlNodeList
         Dim i As Integer
+        Dim rakuten As String
+        Using client = New WebClient()
+            client.Encoding = Encoding.UTF8
+            rakuten = client.DownloadString("http://webservice.rakuten.de/merchants/orders/getOrders?key=123456789a123456789a123456789a12")
+            Console.WriteLine(rakuten)
+            Dim xmlfile As System.IO.StreamWriter
+            xmlfile = My.Computer.FileSystem.OpenTextFileWriter("\\SERVER-02\BMECat\Rakuten\rakuten.xml", False)     ' Write to File
+            xmlfile.Write(rakuten)
+            xmlfile.Close()
+        End Using
         Dim fs As New FileStream("C:\Users\s.ewert\Desktop\rakuten.xml", FileMode.Open, FileAccess.Read)
         xmldoc.Load(fs)
         xmlnode_order = xmldoc.GetElementsByTagName("order")
@@ -20,7 +32,7 @@ Public Class Form1
         Console.WriteLine(xmldoc.ChildNodes)
 
         Dim file As System.IO.StreamWriter
-        file = My.Computer.FileSystem.OpenTextFileWriter("C:\Users\s.ewert\Desktop\rakuten.csv", False)     ' Write to File
+        file = My.Computer.FileSystem.OpenTextFileWriter("\\SERVER-02\BMECat\Rakuten\rakuten.csv", False)     ' Write to File
 
         file.WriteLine("Bestellnummer;Bestelldatum;EMail;Artikelnummer;Menge;Preis;" +
                           "Empfangfirma;Empfangvorname;Empfangnachname;EmpfangStrasse;EmpfangPLZ;Empfangort;EmpfangLKZ;" +
@@ -91,7 +103,7 @@ Public Class Form1
                                   ";" + xmlnode_client(i).ChildNodes.Item(10).InnerText.Trim() + 'Rechnungs LKZ
                                   ";" + "1234567891" + 'Kundennummer
                                   ";" + "10" + 'Zahlungsart
-                                  ";" + "4" + 'Auftragsart
+                                  ";" + "7" + 'Auftragsart
                                   ";" + "3" + 'Versandnummer
                                   ";" + "Bitte nicht überweisen. Die Rechnung wurde bereits über Rakuten beglichen" + 'Endetext
                                   ";" + "Rakuten") 'Versandtext
