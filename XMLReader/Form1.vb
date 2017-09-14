@@ -13,26 +13,29 @@ Public Class Form1
         Dim xmlnode_item As XmlNodeList
         Dim i As Integer
         Dim rakuten As String
+        Dim xmlpath As String = "\\SERVER-02\BMECat\Rakuten\rakuten.xml"
+        Dim csvpath As String = "\\SERVER-02\BMECat\Rakuten\rakuten.csv"
+
         Using client = New WebClient()
+            Dim datetime As DateTime = Date.Now
+            Dim newdatetime As DateTime = datetime.AddMinutes(-10)  'Get the time ten minutes before -> Only show 'new' orders
+            Console.WriteLine()
             client.Encoding = Encoding.UTF8
-            rakuten = client.DownloadString("http://webservice.rakuten.de/merchants/orders/getOrders?key=123456789a123456789a123456789a12")
-            Console.WriteLine(rakuten)
+            rakuten = client.DownloadString("http://webservice.rakuten.de/merchants/orders/getOrders?key=7e658f9eca5c6dc377c17c2c7c974a42&created_from=" + newdatetime.ToString("yyyy-MM-dd hh:mm:ss"))
             Dim xmlfile As System.IO.StreamWriter
-            xmlfile = My.Computer.FileSystem.OpenTextFileWriter("\\SERVER-02\BMECat\Rakuten\rakuten.xml", False)     ' Write to File
+            xmlfile = My.Computer.FileSystem.OpenTextFileWriter(xmlpath, False)     ' Write to File
             xmlfile.Write(rakuten)
             xmlfile.Close()
         End Using
-        Dim fs As New FileStream("C:\Users\s.ewert\Desktop\rakuten.xml", FileMode.Open, FileAccess.Read)
+        Dim fs As New FileStream(xmlpath, FileMode.Open, FileAccess.Read)
         xmldoc.Load(fs)
         xmlnode_order = xmldoc.GetElementsByTagName("order")
         xmlnode_client = xmldoc.GetElementsByTagName("client")
         xmlnode_delivery = xmldoc.GetElementsByTagName("delivery_address")
         xmlnode_item = xmldoc.GetElementsByTagName("item")
 
-        Console.WriteLine(xmldoc.ChildNodes)
-
         Dim file As System.IO.StreamWriter
-        file = My.Computer.FileSystem.OpenTextFileWriter("\\SERVER-02\BMECat\Rakuten\rakuten.csv", False)     ' Write to File
+        file = My.Computer.FileSystem.OpenTextFileWriter(csvpath, False)     ' Write to File
 
         file.WriteLine("Bestellnummer;Bestelldatum;EMail;Artikelnummer;Menge;Preis;" +
                           "Empfangfirma;Empfangvorname;Empfangnachname;EmpfangStrasse;EmpfangPLZ;Empfangort;EmpfangLKZ;" +
@@ -44,10 +47,10 @@ Public Class Form1
         Dim offset As Integer = 0 ' Items in first delivery
         For i = 0 To xmlnode_order.Count - 1
 
-            Dim delivery_item As String = xmlnode_order(i).ChildNodes.Item(12).InnerXml
+            Dim delivery_item As String = xmlnode_order(i).ChildNodes.Item(13).InnerXml
             Dim phrase As String = "<item>"
             offset = (delivery_item.Length - delivery_item.Replace(phrase, String.Empty).Length) / phrase.Length    ' Get number of items in delivery
-
+            Console.WriteLine(offset)
 
             For f = f + 1 To f + offset
                 Try
